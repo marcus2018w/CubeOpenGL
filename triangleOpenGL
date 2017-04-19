@@ -4,7 +4,11 @@ import java.awt.DisplayMode;
 
 import javax.swing.JFrame;
 
+import extra.*;
+
 import com.jogamp.newt.Display;
+import com.jogamp.newt.event.KeyEvent;
+import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
@@ -16,13 +20,23 @@ import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.gl2.GLUT;
 
+import java.util.HashMap;
 import java.util.Scanner;
 import java.awt.Toolkit;
 public class Triangle extends GLJPanel implements GLEventListener{
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		JFrame window = new JFrame("Viewing Scene");
+		Scanner s = new Scanner(System.in);
+		view.put( 12f, new Camera(new Point3d(0,0,1), new Point3d(0,0,0)));
+		view.put(4f, new Camera(new Point3d(-.7f,0,1), new Point3d(-.7f,0,0)));
+		view.put(19.3f, new Camera(new Point3d(.52f,0,1), new Point3d(.52f,0,0)));
+		view.put(24.3f, new Camera(new Point3d(.9f,0,1), new Point3d(.9f,0,0)));
+		// values already decided based on box
+		System.out.println("Enter horizontal viewing position, use Ctrl + Alt + Del in order to get out of full screen mode");
+		float xposition = s.nextFloat();
+	    viewPosition = view.get(xposition);
+		window = new JFrame("Viewing Scene");
 		Canvas canvas = new Canvas();
 		GLCapabilities caps = new GLCapabilities(null);
 		Triangle panel = new Triangle(caps);
@@ -44,42 +58,45 @@ public class Triangle extends GLJPanel implements GLEventListener{
 		int y = (int ) tk.getScreenSize().getHeight(); 
 		setPreferredSize(new Dimension(x, y));
 		addGLEventListener(this);
+		
+		
 	}
 	private void triangle(GL2 gl, float r, float g, float b){
-		gl.glBegin(GL2.GL_TRIANGLES);   
+		// makes a red triangle that is approxiamte the same size of a physical triangle
+		gl.glBegin(GL2.GL_TRIANGLES);
 		gl.glColor3f(r,b,g);
 		gl.glVertex3f(0, 0, 0);
-		gl.glVertex3f(.1f,0,0);
-		gl.glVertex3f(0,.1f,0);
+		gl.glVertex3f(-.25f,0,0);
+		gl.glVertex3f(0,.45f,0);
 		gl.glEnd();
 	}
+	
 	private void triangle(GL2 gl){
 		gl.glPushMatrix();
 		triangle(gl,1.0f,0.0f,0.0f);
-		//make a red triangle
 		gl.glPopMatrix();
-		
 	}
 	@Override
 	public void display(GLAutoDrawable drawable) {
 		// TODO Auto-generated method stub
 		GL2 gl = drawable.getGL().getGL2();
 		GLU glu = GLU.createGLU(gl);
+		gl.glLoadIdentity();
+		glu.gluLookAt(viewPosition.origin.x,viewPosition.origin.y,viewPosition.origin.z,viewPosition.center.x,viewPosition.center.y,viewPosition.center.z, 0.0, 1.0, 0.0);
+		// changes the camera orientation based on the user's perspective
 		gl.glClearColor(0, 0, 0, 0);
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 		gl.glMatrixMode(GL2.GL_PROJECTION); // Set up the projection.
 		gl.glLoadIdentity();
 		gl.glOrtho(-1, 1, -1, 1, -2, 2);
 		gl.glMatrixMode(GL2.GL_MODELVIEW);
-		gl.glLoadIdentity();
-		glu.gluLookAt(0.15, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 		triangle(gl);
 	}
 
 	@Override
 	public void dispose(GLAutoDrawable drawable) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -100,7 +117,6 @@ public class Triangle extends GLJPanel implements GLEventListener{
 		// called when user resizes the window
 				final GL2 gl = drawable.getGL().getGL2();
 				GLU glu = GLU.createGLU(gl);
-
 				if (height <= 0)
 					height = 1;
 				final float h = (float) width / (float) height;
@@ -110,7 +126,16 @@ public class Triangle extends GLJPanel implements GLEventListener{
 				glu.gluPerspective(45.0f, h, 1.0, 20.0);
 				gl.glMatrixMode(GL2.GL_MODELVIEW);
 				gl.glLoadIdentity();
+	}
+	@Override
+	public void keyPressed(KeyEvent arg0) {
+		// TODO Auto-generated method stub
 		
 	}
+	@Override
+	public void keyReleased(KeyEvent arg0) {
+		// TODO Auto-generated method stub
+	}
+	
 
 }
